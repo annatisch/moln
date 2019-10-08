@@ -1,2 +1,2 @@
-# moln
-Stupid simple python access to Azure services
+# moln {/moːln/}
+Stupid simple access to Azure services using Python
