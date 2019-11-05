@@ -1,0 +1,4 @@
+*.py[codi]
+build/
+env/
+*.egg-info/
