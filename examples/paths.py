@@ -23,3 +23,7 @@ with remote_file.open(mode='r') as rb:
 
 for blob in container.glob('**/*.*'):
     print(blob)
+
+with (container / 'customspeech.swagger.json').open(logging_enable=True) as f:
+    for line in f:
+        print(line)

@@ -173,45 +173,60 @@ class BlobPath(AzurePath):
         return f"/{self.container_name}/{self.name}"
 
 
-class DownloadStream(io.RawIOBase):
+class DownloadStream(io.BufferedReader):
     def __init__(self, client: azure.storage.blob.BlobClient):
-        self.client = client
-        self.position = 0
+        raw = self.RawDownloadStream(client)
+        super().__init__(raw)
 
-    def read(self, size=-1):
-        data_to_read = 4096 if size == -1 else size
-        stream = self.client.download_blob(offset=self.position, length=data_to_read)
-        data = stream.readall()
-        self.position += len(data)
-        return data
+    class RawDownloadStream(io.RawIOBase):
+        def __init__(self, client: azure.storage.blob.BlobClient):
+            self.client = client
+            self.position = 0
+            blob_properties = self.client.get_blob_properties()
+            self.size = blob_properties.size
 
-    def readinto(self, b):
-        bufoffset = 0
-        data_to_read = len(b)
-        done = False
-        while not done:
-            read_data = self.read(data_to_read)
-            data_read = len(read_data)
+        def read(self, size=-1):
+            data_to_read = min(4096 if size == -1 else size, self.size - self.position)
+            if data_to_read > 0:
+                stream = self.client.download_blob(
+                    offset=self.position, length=data_to_read
+                )
+                data = stream.readall()
+                self.position += len(data)
+                return data
+            else:
+                return []
 
-            if data_read:
-                b[bufoffset : bufoffset + data_read] = read_data
-                bufoffset += data_read
+        def readable(self):
+            return True
 
-            done = data_read == 0 or bufoffset == len(b)
+        def readinto(self, b):
+            bufoffset = 0
+            data_to_read = len(b)
+            done = False
+            while not done:
+                read_data = self.read(data_to_read)
+                data_read = len(read_data)
 
-        return bufoffset
+                if data_read:
+                    b[bufoffset : bufoffset + data_read] = read_data
+                    bufoffset += data_read
 
-    def readall(self):
-        blob_properties = self.client.get_blob_properties()
-        data_to_read = blob_properties.size
-        buf = bytearray(data_to_read)
-        self.readinto(buf)
-        return buf
+                done = data_read == 0 or bufoffset == len(b)
 
-    def write(self):
-        raise NotImplementedError(
-            "Huh - someone tried to write to a download stream. Never cross the streams!"
-        )
+            return bufoffset
+
+        def readall(self):
+            data_to_read = self.size - self.position
+            buf = bytearray(data_to_read)
+            self.readinto(buf)
+            self.position += len(buf)
+            return bytes(buf)
+
+        def write(self):
+            raise NotImplementedError(
+                "Huh - someone tried to write to a download stream. Never cross the streams!"
+            )
 
 
 class UploadStream(io.BytesIO):
