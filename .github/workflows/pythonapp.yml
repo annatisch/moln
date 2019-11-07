@@ -24,10 +24,6 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8
-        # I need to figure out how github actions actually work. I would have
-        # expected the requirements.txt to install moln, which in turn has dependencies
-        # on these packages. 
-        pip install azure-storage-blob azure-identity
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
