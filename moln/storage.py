@@ -7,7 +7,7 @@
     # "Attaching" to the Azure Storage account gives me a pathlib.Path-like
     # object
     root = moln.storage.attach('https://molntest.blob.core.windows.net')
-    
+
     # I can navigate to a specific blob
     blob = root / 'mycontainer' / 'myblob.json'
 
@@ -39,7 +39,7 @@ class AzurePath(abc.ABC):
     def mkdir(self, *, exists_ok: bool = False, **kwargs):
         """Create a new directory (container)
 
-        Only supported for container-level paths. 
+        Only supported for container-level paths.
 
         :param exists_ok: Don't report an error if directory (container) already exists.
         """
@@ -91,7 +91,7 @@ class ContainerPath(AzurePath):
     def mkdir(self, *, exists_ok=False, **kwargs):
         try:
             self.client.create_container(**kwargs)
-        except azure.core.exceptions.ResourceExistsError as e:
+        except azure.core.exceptions.ResourceExistsError:
             if not exists_ok:
                 raise
 
@@ -110,7 +110,7 @@ class ContainerPath(AzurePath):
         if pattern.startswith("**/"):
             # recursive = True
             pattern = pattern[3:]
-        #else:
+        # else:
         #    recursive = False
 
         if pattern[0] == ".":

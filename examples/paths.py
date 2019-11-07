@@ -1,5 +1,6 @@
 import pathlib
 
+import azure.storage.blob
 import moln.storage
 
 account = moln.storage.attach(account_url='https://molntest.blob.core.windows.net')
