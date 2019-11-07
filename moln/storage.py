@@ -194,7 +194,7 @@ class DownloadStream(io.RawIOBase):
             data_read = len(read_data)
 
             if data_read:
-                b[bufoffset:bufoffset + data_read] = read_data
+                b[bufoffset : bufoffset + data_read] = read_data
                 bufoffset += data_read
 
             done = data_read == 0 or bufoffset == len(b)
