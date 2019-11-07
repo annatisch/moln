@@ -1,3 +1,5 @@
+![](https://github.com/johanste/moln/workflows/Python%20application/badge.svg)
+
 # moln {/mo:ln/}
 Stupid simple access to [Microsoft Azure](https://azure.microsoft.com) services using Python. Built for the rest of us.
 
