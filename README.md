@@ -9,6 +9,10 @@ To install:
 pip install moln
 ```
 
+### Azure Storage Blobs
+
+pathlib-like API to access blobs in Azure Storage. 
+
 ```python
 import pathlib
 
