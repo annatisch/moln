@@ -20,3 +20,5 @@ with remote_file.open(mode='r') as rb:
     data = json.load(rb)
     print(data)
 
+for blob in container.glob('**/*.*'):
+    print(blob)

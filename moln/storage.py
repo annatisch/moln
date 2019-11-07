@@ -17,6 +17,7 @@
 """
 
 import abc
+import fnmatch
 import io
 
 import azure.core.exceptions
@@ -82,7 +83,7 @@ class AccountPath(AzurePath):
 class ContainerPath(AzurePath):
     
     def __init__(self, container_name, client):
-        self.container_name = container_name
+        self.name = container_name
         self.client = client
 
     def mkdir(self, *, exists_ok=False, **kwargs):
@@ -102,18 +103,37 @@ class ContainerPath(AzurePath):
         except azure.core.ResoureNotFoundError:
             return False
 
+    def glob(self, pattern, **kwargs):
+        if pattern.startswith('**/'):
+            recursive = True
+            pattern = pattern[3:]
+        else:
+            recursive = False
+
+        if pattern[0] == '.':
+            leading_dot = True
+            pattern = pattern[1:]
+        else:
+            leading_dot = False
+
+        for blob in self.client.list_blobs():
+            if fnmatch.fnmatch(blob.name, pattern):
+                yield BlobPath(blob_name=blob.name, container_name=self.name, client=self.client.get_blob_client(blob))
+                
     def is_dir(self):
         return self.exists()
 
     def __truediv__(self, other):
         return BlobPath(
-            other,
-            self.client.get_blob_client(other)
+            container_name=self.name,
+            blob_name=other,
+            client=self.client.get_blob_client(other)
         )
 
 class BlobPath(AzurePath):
     
-    def __init__(self, blob_name, client):
+    def __init__(self, container_name, blob_name, client):
+        self.container_name = container_name
         self.name = blob_name
         self.client = client
 
@@ -139,6 +159,9 @@ class BlobPath(AzurePath):
 
     def mkdir(self, exists_ok=False, **kwargs):
         raise TypeError("Unable to mkdir a blob.")
+
+    def __repr__(self):
+        return f'/{self.container_name}/{self.name}'
 
 class DownloadStream(io.RawIOBase):
 

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="moln",
-    version="0.0.1",
+    version="0.0.2",
     author="Johan Stenberg",
     author_email="johan.stenberg@microsoft.com",
     description="Stupid, simple Azure client library built for the rest of us",
